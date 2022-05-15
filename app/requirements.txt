@@ -1,7 +1,0 @@
-python-decouple
-aiohttp
-aioretry
-sqlalchemy
-psycopg2
-requests
-web3

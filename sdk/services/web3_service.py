@@ -2,11 +2,11 @@ from web3.auto import w3, Web3
 from decouple import config
 
 class Web3Service:
-    def __init__(self, provider):
-        if provider is None:
+    def __init__(self, provider_url):
+        if provider_url is None:
             self.w3 = w3
         else:
-            self.w3 = Web3(Web3.HTTPProvider(provider))
+            self.w3 = Web3(Web3.HTTPProvider(provider_url))
 
     def decode_input(self, abi, input):
 

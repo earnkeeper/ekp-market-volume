@@ -1,0 +1,8 @@
+aiohttp
+aioretry
+dependency-injector
+psycopg2
+python-decouple
+requests
+sqlalchemy
+web3
