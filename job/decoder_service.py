@@ -67,6 +67,12 @@ class DecoderService:
             models = []
 
             for next_tran in next:
+                
+                next_timestamp = next_tran["timestamp_unix"]
+                
+                if next_timestamp > start_timestamp:
+                    start_timestamp = next_timestamp
+                    
                 model = self.decode_transaction(
                     next_tran,
                     abi,
