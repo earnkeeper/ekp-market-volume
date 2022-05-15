@@ -121,8 +121,9 @@ class DecoderService:
 
         rate = await self.cache_service.wrap(
             key=rates_key,
-            fn=lambda: self.coingecko_service
-            .get_historic_price(coin_id, date_str)["usd"]
+            fn=lambda: self.coingecko_service.get_historic_price(
+                coin_id, date_str, "usd"
+            )
         )
 
         decimals_key = f"decimals_{currency}"

@@ -27,10 +27,10 @@ class CoingeckoService:
 
         return map
 
-    async def get_historic_price(self, coin_id, date_str):
+    async def get_historic_price(self, coin_id, date_str, fiat_id):
 
         url = f"{self.base_url}/coins/{coin_id}/history?date={date_str}"
 
         result = await self.rest_client.get(url, lambda data, text: data['market_data']['current_price'])
 
-        return result
+        return result[fiat_id]
