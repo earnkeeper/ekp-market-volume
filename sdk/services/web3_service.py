@@ -1,5 +1,6 @@
-from web3.auto import w3, Web3
 from decouple import config
+from web3.auto import Web3, w3
+
 
 class Web3Service:
     def __init__(self, provider_url):
@@ -15,7 +16,7 @@ class Web3Service:
 
         return func_params
 
-    def get_currency_decimals(self, address):
+    async def get_currency_decimals(self, address):
         address = Web3.toChecksumAddress(address)
 
         decimals_abi = [
@@ -31,5 +32,7 @@ class Web3Service:
         ]
 
         contract = self.w3.eth.contract(address=address, abi=decimals_abi)
+
+        print(f'🐛 contract("{address}").decimals.call()')
 
         return contract.functions.decimals().call()

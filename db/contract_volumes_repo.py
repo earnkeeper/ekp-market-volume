@@ -34,7 +34,7 @@ class ContractVolumesRepo:
         self.pg_client.conn.execute(
             stmt
             .on_conflict_do_update(
-                index_elements=["date_str"],
+                index_elements=["date_str", "address"],
                 set_={
                     "volume": stmt.excluded.volume,
                     "volume_usd": stmt.excluded.volume_usd

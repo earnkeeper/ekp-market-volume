@@ -4,6 +4,7 @@ import math
 from db.contract_volumes_repo import ContractVolumesRepo
 from db.tofu_buys_repo import TofuBuysRepo
 from db.transactions_repo import TransactionsRepo
+from sdk.services.cache_service import CacheService
 from sdk.services.coingecko_service import CoingeckoService
 from sdk.services.etherscan_service import EtherscanService
 from sdk.services.web3_service import Web3Service
@@ -12,6 +13,7 @@ from sdk.services.web3_service import Web3Service
 class DecoderService:
     def __init__(
         self,
+        cache_service: CacheService,
         coingecko_service: CoingeckoService,
         contract_volumes_repo: ContractVolumesRepo,
         etherscan_service: EtherscanService,
@@ -19,6 +21,7 @@ class DecoderService:
         transactions_repo: TransactionsRepo,
         web3_service: Web3Service,
     ):
+        self.cache_service = cache_service
         self.coingecko_service = coingecko_service
         self.contract_volumes_repo = contract_volumes_repo
         self.etherscan_service = etherscan_service
@@ -26,22 +29,18 @@ class DecoderService:
         self.transactions_repo = transactions_repo
         self.web3_service = web3_service
 
-    def decode_transactions(self, query_address):
-        print("✨ Decoding transactions")
-
-        abi = self.etherscan_service.get_abi(query_address)
-
-        coin_id_map = self.coingecko_service.get_coin_id_map(
-            "binance-smart-chain"
+    async def decode_transactions(self, query_address):
+        self.coin_id_map = await self.cache_service.wrap(
+            "coin_id_map",
+            ex=86400,
+            fn=lambda: self.coingecko_service.get_coin_id_map(
+                "binance-smart-chain"
+            )
         )
 
-        rates = {
-            "usd": {
-                "14-05-2022": 1.0
-            }
-        }
+        print("✨ Decoding transactions")
 
-        currency_decimals = {}
+        query_abi = await self.etherscan_service.get_abi(query_address)
 
         page_size = 10000
         start_timestamp = 0
@@ -75,7 +74,7 @@ class DecoderService:
             if (len(next) == 0):
                 break
 
-            print(f"🐛 Decoding {len(next)} transactions..")
+            print(f"✨ Decoding {len(next)} transactions..")
 
             models = []
 
@@ -86,12 +85,9 @@ class DecoderService:
                 if next_timestamp > start_timestamp:
                     start_timestamp = next_timestamp
 
-                model = self.decode_transaction(
+                model = await self.decode_transaction(
                     next_tran,
-                    abi,
-                    coin_id_map,
-                    rates,
-                    currency_decimals,
+                    query_abi,
                     contract_volumes
                 )
                 models.append(model)
@@ -99,17 +95,16 @@ class DecoderService:
             self.tofu_buys_repo.save(models)
             self.contract_volumes_repo.save(contract_volumes)
 
-    def decode_transaction(
+    async def decode_transaction(
         self,
         next_tran,
-        abi,
-        coin_id_map,
-        rates,
-        currency_decimals,
+        query_abi,
         contract_volumes
     ):
-        decoded = self.web3_service.decode_input(abi, next_tran["input"])
+        decoded = self.web3_service.decode_input(query_abi, next_tran["input"])
         currency = decoded["detail"][7]
+        value = decoded["detail"][8]
+        contract_address = decoded["detail"][11][0][0]
 
         coin_id = None
 
@@ -117,26 +112,26 @@ class DecoderService:
             currency = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
             coin_id = "wbnb"
         else:
-            if currency in coin_id_map:
-                coin_id = coin_id_map[currency]
+            if currency in self.coin_id_map:
+                coin_id = self.coin_id_map[currency]
 
         date_str = next_tran["timestamp"].strftime("%d-%m-%Y")
 
-        if (coin_id not in rates):
-            rates[coin_id] = {}
+        rates_key = f"coin_price_{coin_id}_{date_str}"
 
-        if (date_str not in rates[coin_id]):
-            rates[coin_id][date_str] = self.coingecko_service.get_historic_price(
-                coin_id, date_str)["usd"]
+        rate = await self.cache_service.wrap(
+            key=rates_key,
+            fn=lambda: self.coingecko_service
+            .get_historic_price(coin_id, date_str)["usd"]
+        )
 
-        if currency not in currency_decimals:
-            currency_decimals[currency] = self.web3_service.get_currency_decimals(
-                currency)
+        decimals_key = f"decimals_{currency}"
 
-        rate = rates[coin_id][date_str]
-        decimals = currency_decimals[currency]
+        decimals = await self.cache_service.wrap(
+            key=decimals_key,
+            fn=lambda: self.web3_service.get_currency_decimals(currency)
+        )
 
-        value = decoded["detail"][8]
         value = int(value) / math.pow(10, decimals)
         value_usd = value * rate
 
@@ -145,10 +140,16 @@ class DecoderService:
 
         if contract_volume is None:
 
+            contract_name_key = f"contract_name_{contract_address}"
+            contract_name = await self.cache_service.wrap(
+                key=contract_name_key,
+                fn=lambda: self.etherscan_service.get_contract_name(
+                    contract_address)
+            )
             contract_volume = {
                 "date_str": date_str,
-                "address": next_tran["to"],
-                "name": self.etherscan_service.get_contract_name(next_tran["to"]),
+                "address": contract_address,
+                "name": contract_name,
                 "volume": 0,
                 "volume_usd": 0
             }

@@ -1,18 +1,21 @@
 import json
 
-import requests
+from sdk.services.rest_client import RestClient
 
 
 class CoingeckoService:
-    def __init__(self):
+    def __init__(
+        self,
+        rest_client: RestClient
+    ):
         self.base_url = "https://api.coingecko.com/api/v3"
+        self.rest_client = rest_client
 
-    def get_coin_id_map(self, platform_id):
+    async def get_coin_id_map(self, platform_id):
+
         url = f"{self.base_url}/coins/list?include_platform=true"
 
-        print(f"🐛 {url}")
-
-        response = json.loads(requests.get(url).text)
+        response = await self.rest_client.get(url)
 
         map = {}
 
@@ -24,11 +27,10 @@ class CoingeckoService:
 
         return map
 
-    def get_historic_price(self, coin_id, date_str):
+    async def get_historic_price(self, coin_id, date_str):
+
         url = f"{self.base_url}/coins/{coin_id}/history?date={date_str}"
 
-        print(f"🐛 {url}")
+        result = await self.rest_client.get(url, lambda data, text: data['market_data']['current_price'])
 
-        response = json.loads(requests.get(url).text)
-
-        return response['market_data']['current_price']
+        return result

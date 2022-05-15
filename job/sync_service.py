@@ -23,7 +23,7 @@ class SyncService:
         if (self.max_trans_to_fetch > 0):
             page_size = self.max_trans_to_fetch
 
-        latest = self.transactions_repo.find_latest()
+        latest = self.transactions_repo.find_latest(query_address)
 
         if latest is not None:
             start_block = latest["block_number"]
@@ -54,7 +54,7 @@ class SyncService:
                 break
 
     def map_model(self, query_address, tran):
-        return {
+        model = {
             "hash": tran["hash"],
             "block_hash": tran["blockHash"],
             "block_number": tran["blockNumber"],
@@ -62,6 +62,7 @@ class SyncService:
             "from": tran["from"],
             "gas_price": int(tran["gasPrice"]),
             "gas_used": int(tran["gasUsed"]),
+            "input_method": tran["input"],
             "input": tran["input"],
             "is_error": tran["isError"] == "1",
             "query_address": query_address,
@@ -70,3 +71,8 @@ class SyncService:
             "to": tran["to"],
             "transaction_index": int(tran["transactionIndex"]),
         }
+
+        if (len(model["input"]) >= 10):
+            model["input_method"] = model["input"][0:10]
+
+        return model

@@ -10,8 +10,11 @@ from db.transactions_repo import TransactionsRepo
 from job.decoder_service import DecoderService
 from job.sync_service import SyncService
 from sdk.db.pg_client import PgClient
+from sdk.services.cache_service import CacheService
 from sdk.services.coingecko_service import CoingeckoService
 from sdk.services.etherscan_service import EtherscanService
+from sdk.services.redis_client import RedisClient
+from sdk.services.rest_client import RestClient
 from sdk.services.web3_service import Web3Service
 
 MARKET_CONTRACT = '0x449d05c544601631785a7c062dcdff530330317e'
@@ -22,22 +25,39 @@ class Container(containers.DeclarativeContainer):
     POSTGRES_URI = config("POSTGRES_URI")
     ETHERSCAN_API_KEY = config("ETHERSCAN_API_KEY")
     ETHERSCAN_BASE_URL = config("ETHERSCAN_BASE_URL")
-    WEB3_PROVIDER_URL = config("WEB3_PROVIDER_URL")
     MAX_TRANS_TO_FETCH = config("MAX_TRANS_TO_FETCH", cast=int, default=0)
+    REDIS_URI = config("REDIS_URI", default="redis://localhost")
+    WEB3_PROVIDER_URL = config("WEB3_PROVIDER_URL")
+
+    redis_client = providers.Singleton(
+        RedisClient,
+        uri=REDIS_URI
+    )
+
+    rest_client = providers.Singleton(
+        RestClient,
+    )
+
+    pg_client = providers.Singleton(
+        PgClient,
+        uri=POSTGRES_URI,
+    )
 
     coingecko_service = providers.Singleton(
         CoingeckoService,
+        rest_client=rest_client
     )
 
     etherscan_service = providers.Singleton(
         EtherscanService,
         api_key=ETHERSCAN_API_KEY,
         base_url=ETHERSCAN_BASE_URL,
+        rest_client=rest_client
     )
 
-    pg_client = providers.Singleton(
-        PgClient,
-        uri=POSTGRES_URI,
+    cache_service = providers.Singleton(
+        CacheService,
+        redis_client=redis_client,
     )
 
     web3_service = providers.Singleton(
@@ -69,6 +89,7 @@ class Container(containers.DeclarativeContainer):
 
     decoder_service = providers.Singleton(
         DecoderService,
+        cache_service=cache_service,
         coingecko_service=coingecko_service,
         contract_volumes_repo=contract_volumes_repo,
         etherscan_service=etherscan_service,
