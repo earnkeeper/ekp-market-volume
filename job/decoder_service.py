@@ -137,7 +137,7 @@ class DecoderService:
         value_usd = value * rate
 
         contract_volume = next(
-            (item for item in contract_volumes if item["date_str"] == date_str and item["address"] == next_tran["to"]), None)
+            (item for item in contract_volumes if item["date_str"] == date_str and item["address"] == contract_address), None)
 
         if contract_volume is None:
 
