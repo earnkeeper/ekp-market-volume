@@ -1,3 +1,4 @@
+import time
 from sdk.db.pg_client import PgClient
 from sqlalchemy import (Column, DateTime, Float, Integer, String, Table, desc,
                         select)
@@ -28,6 +29,9 @@ class TofuBuysRepo:
         pg_client.meta_data.create_all(pg_client.engine)
 
     def find_latest(self):
+        
+        start = time.perf_counter()
+        
         result = list(
             self.pg_client.conn.execute(
                 select(self.table)
@@ -36,14 +40,20 @@ class TofuBuysRepo:
             )
         )
 
+        print(f"⏱  [tofu_buys_repo.find_latest] {time.perf_counter() - start:0.3f}s")
+
         if (len(result)):
             return result[0]
 
         return None
 
     def save(self, models):
+        start = time.perf_counter()
+        
         self.pg_client.conn.execute(
             insert(self.table)
             .on_conflict_do_nothing(index_elements=["hash"]),
             models
         )
+        
+        print(f"⏱  [tofu_buys_repo.save] {time.perf_counter() - start:0.3f}s")

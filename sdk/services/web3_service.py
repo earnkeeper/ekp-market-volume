@@ -1,3 +1,4 @@
+import time
 from decouple import config
 from web3.auto import Web3, w3
 
@@ -17,6 +18,8 @@ class Web3Service:
         return func_params
 
     async def get_currency_decimals(self, address):
+        start = time.perf_counter()
+        
         address = Web3.toChecksumAddress(address)
 
         decimals_abi = [
@@ -35,4 +38,8 @@ class Web3Service:
 
         print(f'🐛 contract("{address}").decimals.call()')
 
-        return contract.functions.decimals().call()
+        result = contract.functions.decimals().call()
+        
+        print(f"⏱  [web3_service.get_currency_decimals] {time.perf_counter() - start:0.3f}s")
+        
+        return result

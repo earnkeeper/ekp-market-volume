@@ -1,4 +1,5 @@
 import json
+import time
 
 import aiohttp
 from aioretry import retry
@@ -11,7 +12,7 @@ class RestClient:
     async def get(self, url, fn=lambda data, text: data):
         async with aiohttp.ClientSession() as session:
             print(f"🐛 {url}")
-
+            start = time.perf_counter()
             response = await session.get(url=url)
 
             if (response.status != 200):
@@ -20,4 +21,6 @@ class RestClient:
             text = await response.read()
             data = json.loads(text.decode())
 
+            print(f"⏱  [{url}] {time.perf_counter() - start:0.3f}s")
+            
             return fn(data, text)

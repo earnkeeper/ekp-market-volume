@@ -1,3 +1,4 @@
+import time
 from sdk.db.pg_client import PgClient
 from sqlalchemy import (Column, DateTime, Float, Integer, String, Table, desc,
                         select)
@@ -23,13 +24,21 @@ class ContractVolumesRepo:
         pg_client.meta_data.create_all(pg_client.engine)
 
     def find_all(self):
-        return list(
+        start = time.perf_counter()
+        
+        result = list(
             self.pg_client.conn.execute(
                 select(self.table).order_by('date_str')
             )
         )
+        
+        print(f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
+        
+        return result
 
     def save(self, models):
+        start = time.perf_counter()
+        
         stmt = insert(self.table)
         self.pg_client.conn.execute(
             stmt
@@ -42,3 +51,5 @@ class ContractVolumesRepo:
             ),
             models
         )
+        
+        print(f"⏱  [contract_volumes_repo.save] {time.perf_counter() - start:0.3f}s")

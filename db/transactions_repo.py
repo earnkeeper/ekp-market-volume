@@ -1,4 +1,4 @@
-from operator import index
+import time
 
 from sdk.db.pg_client import PgClient
 from sqlalchemy import (Boolean, Column, DateTime, Index, Integer, String, Table,
@@ -37,6 +37,8 @@ class TransactionsRepo:
         self.pg_client.meta_data.create_all(pg_client.engine)
 
     def find_latest(self, query_address):
+        start = time.perf_counter()
+        
         result = list(
             self.pg_client.conn.execute(
                 select(self.table)
@@ -46,13 +48,17 @@ class TransactionsRepo:
             )
         )
 
+        print(f"⏱  [transactions_repo.find_latest] {time.perf_counter() - start:0.3f}s")
+        
         if (len(result)):
             return result[0]
 
         return None
 
     def find_next_by_source(self, query_address, input_method, start_timestamp, limit):
-        return list(
+        start = time.perf_counter()
+        
+        result =  list(
             self.pg_client.conn.execute(
                 select(self.table)
                 .where(self.table.c.query_address == query_address)
@@ -62,10 +68,19 @@ class TransactionsRepo:
                 .limit(limit)
             )
         )
+        
+        print(f"⏱  [transactions_repo.find_next_by_source] {time.perf_counter() - start:0.3f}s")
+        
+        return result
 
     def save(self, models):
+        
+        start = time.perf_counter()
+        
         self.pg_client.conn.execute(
             insert(self.table)
             .on_conflict_do_nothing(index_elements=["hash"]),
             models
         )
+        
+        print(f"⏱  [transactions_repo.save] {time.perf_counter() - start:0.3f}s")
