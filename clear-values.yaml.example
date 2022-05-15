@@ -1,0 +1,7 @@
+etherscan:
+  apiKey:
+  baseUrl: https://api.bscscan.com/api
+postgres:
+  uri: postgresql+psycopg2://localhost:5432/market_volume
+web3:
+  providerUrl: https://bsc-dataseed3.ninicoin.io

@@ -1,0 +1,6 @@
+configVersion: 1
+project: market-volume
+---
+image: job
+dockerfile: Dockerfile.job
+context: .

@@ -39,15 +39,8 @@ class TofuBuysRepo:
         return None
 
     def save(self, models):
-        stmt = insert(self.table)
         self.pg_client.conn.execute(
-            stmt
-            .on_conflict_do_update(
-                index_elements=["date_str"],
-                set_={
-                    "volume": stmt.excluded.cost,
-                    "volume_usd": stmt.excluded.volume_usd
-                }
-            ),
+            insert(self.table)
+            .on_conflict_do_nothing(index_elements=["hash"]),
             models
         )
