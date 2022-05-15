@@ -42,7 +42,7 @@ class DecoderService:
 
         query_abi = await self.etherscan_service.get_abi(query_address)
 
-        page_size = 10000
+        page_size = 1000
         start_timestamp = 0
 
         latest = self.tofu_buys_repo.find_latest()
