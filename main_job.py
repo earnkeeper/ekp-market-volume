@@ -86,9 +86,9 @@ def main(
 ):
     print("🚀 Application Start")
     loop = asyncio.get_event_loop()
-    # loop.run_until_complete(
-    #     sync_service.sync_transactions(MARKET_CONTRACT)
-    # )
+    loop.run_until_complete(
+        sync_service.sync_transactions(MARKET_CONTRACT)
+    )
     loop.run_until_complete(
         decoder_service.decode_transactions(MARKET_CONTRACT)
     )
