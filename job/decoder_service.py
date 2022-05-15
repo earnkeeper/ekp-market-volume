@@ -164,7 +164,7 @@ class DecoderService:
             'block_number': next_tran["block_number"],
             'gas_price': next_tran["gas_price"],
             'gas_used': next_tran["gas_used"],
-            'nft_contract_address': next_tran["to"],
+            'nft_contract_address': contract_address,
             'value': value,
             'currency': currency,
             'value_usd': value_usd,

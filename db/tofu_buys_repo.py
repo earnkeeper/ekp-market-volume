@@ -10,26 +10,29 @@ class TofuBuysRepo:
         pg_client: PgClient
     ):
         self.pg_client = pg_client
-        self.table = Table('tofu_buys', pg_client.meta_data,
-                           Column('hash', String(128), primary_key=True),
-                           Column('block_number', Integer(), nullable=False),
-                           Column('gas_price', String(64), nullable=False),
-                           Column('gas_used', Integer(), nullable=False),
-                           Column('nft_contract_address',
-                                  String(42), nullable=False),
-                           Column('value', String(64), nullable=False),
-                           Column('currency', String(42), nullable=False),
-                           Column('value_usd', Float(), nullable=False),
-                           Column('timestamp', DateTime(), nullable=False),
-                           Column('timestamp_unix', Integer(), nullable=False),
-                           )
+        self.table = Table(
+            'tofu_buys',
+            pg_client.meta_data,
+            Column('hash', String(128), primary_key=True),
+            Column('block_number', Integer(), index=True, nullable=False),
+            Column('gas_price', String(64), nullable=False),
+            Column('gas_used', Integer(), nullable=False),
+            Column('nft_contract_address', String(42), index=True, nullable=False),
+            Column('value', String(64), nullable=False),
+            Column('currency', String(42), nullable=False),
+            Column('value_usd', Float(), nullable=False),
+            Column('timestamp', DateTime(), index=True, nullable=False),
+            Column('timestamp_unix', Integer(), index=True, nullable=False),
+        )
 
         pg_client.meta_data.create_all(pg_client.engine)
 
     def find_latest(self):
         result = list(
             self.pg_client.conn.execute(
-                select(self.table).order_by(desc('timestamp_unix')).limit(1)
+                select(self.table)
+                .order_by(desc('timestamp_unix'))
+                .limit(1)
             )
         )
 
