@@ -20,6 +20,9 @@ class SyncService:
         start_block = 0
         page_size = 5000
 
+        if (self.max_trans_to_fetch > 0):
+            page_size = self.max_trans_to_fetch
+
         latest = self.transactions_repo.find_latest()
 
         if latest is not None:
@@ -47,7 +50,7 @@ class SyncService:
 
             self.transactions_repo.save(models)
 
-            if (len(trans) < page_size or self.max_trans_to_fetch > 0 and len(trans) > self.max_trans_to_fetch):
+            if (len(trans) < page_size or self.max_trans_to_fetch > 0 and len(trans) >= self.max_trans_to_fetch):
                 break
 
     def map_model(self, query_address, tran):

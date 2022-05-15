@@ -1,11 +1,13 @@
 
+import math
+
 from db.contract_volumes_repo import ContractVolumesRepo
 from db.tofu_buys_repo import TofuBuysRepo
 from db.transactions_repo import TransactionsRepo
 from sdk.services.coingecko_service import CoingeckoService
 from sdk.services.etherscan_service import EtherscanService
 from sdk.services.web3_service import Web3Service
-import math
+
 
 class DecoderService:
     def __init__(
@@ -48,6 +50,17 @@ class DecoderService:
 
         contract_volumes = self.contract_volumes_repo.find_all()
 
+        def clone_contract_volume(model):
+            return {
+                'date_str': model["date_str"],
+                'address': model["address"],
+                'name': model["name"],
+                'volume': model["volume"],
+                'volume_usd': model["volume_usd"],
+            }
+
+        contract_volumes = list(map(clone_contract_volume, contract_volumes))
+
         if latest is not None:
             start_timestamp = latest["timestamp_unix"]
 
@@ -67,12 +80,12 @@ class DecoderService:
             models = []
 
             for next_tran in next:
-                
+
                 next_timestamp = next_tran["timestamp_unix"]
-                
+
                 if next_timestamp > start_timestamp:
                     start_timestamp = next_timestamp
-                    
+
                 model = self.decode_transaction(
                     next_tran,
                     abi,
