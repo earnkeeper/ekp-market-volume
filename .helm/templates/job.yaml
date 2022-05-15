@@ -26,7 +26,7 @@ spec:
                 - name: WEB3_PROVIDER_URL
                   value: "{{ .Values.web3.providerUrl }}"
                 - name: REDIS_URI
-                  value: redis://"{{ .Release.Name }}"-redis-master
+                  value: "redis://{{ .Release.Name }}-redis-master"
                 - name: PROXY_HOST
                   value: "{{ .Values.proxy.host }}"
                 - name: PROXY_PORT
