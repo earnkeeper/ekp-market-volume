@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deploy
+spec:
+  selector:
+    matchLabels:
+      app: app
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: python
+          image: '{{ .Values.werf.image.app }}'
+          workingDir: /app
+          env:
+            - name: EK_PLUGIN_ID
+              value: {{ .Chart.Name }}
+            - name: POSTGRES_URI
+              value: "{{ .Values.postgres.uri }}"
+            - name: REDIS_URI
+              value: "redis://{{ .Release.Name }}-redis-master"
+            - name: PROXY_HOST
+              value: "{{ .Values.proxy.host }}"
+            - name: PROXY_PORT
+              value: "{{ .Values.proxy.port }}"
+          ports:
+            - containerPort: 3001
+              protocol: TCP

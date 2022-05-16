@@ -4,3 +4,7 @@ project: market-volume
 image: job
 dockerfile: Dockerfile.job
 context: .
+---
+image: app
+dockerfile: Dockerfile.app
+context: .

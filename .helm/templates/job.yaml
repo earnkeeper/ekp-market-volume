@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: job
 spec:
-  schedule: "* 0 * * *"
+  schedule: "*/10 * * * *"
   jobTemplate:
     spec:
       template:
@@ -12,6 +12,7 @@ spec:
             job: job
         spec:
           restartPolicy: Never
+          concurrencyPolicy: Forbid
           containers:
             - name: python
               image: "{{ .Values.werf.image.job }}"

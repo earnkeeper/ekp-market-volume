@@ -1,3 +1,4 @@
+# Shared
 aiohttp
 aioredis
 aioretry
@@ -6,11 +7,10 @@ dependency-injector
 psycopg2
 python-decouple
 sqlalchemy
+# Job
 web3
 # App
-Flask
-flask-cors
+aiohttp_cors
 moment
 python-engineio
 python-socketio
-aiohttp_cors
