@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from db.transactions_repo import TransactionsRepo
-from sdk.services.etherscan_service import EtherscanService
+from ekp_sdk.services import EtherscanService
 
 
 class SyncService:

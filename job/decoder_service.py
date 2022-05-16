@@ -4,10 +4,8 @@ import math
 from db.contract_volumes_repo import ContractVolumesRepo
 from db.tofu_buys_repo import TofuBuysRepo
 from db.transactions_repo import TransactionsRepo
-from sdk.services.cache_service import CacheService
-from sdk.services.coingecko_service import CoingeckoService
-from sdk.services.etherscan_service import EtherscanService
-from sdk.services.web3_service import Web3Service
+from ekp_sdk.services import (CacheService, CoingeckoService, EtherscanService,
+                              Web3Service)
 
 
 class DecoderService:
@@ -53,7 +51,7 @@ class DecoderService:
             return {
                 'date_str': model["date_str"],
                 'address': model["address"],
-                'timestamp': model["timestamp"],
+                'date_timestamp': model["date_timestamp"],
                 'updated': model["updated"],
                 'name': model["name"],
                 'volume': model["volume"],
@@ -92,6 +90,9 @@ class DecoderService:
                     query_abi,
                     contract_volumes
                 )
+                if model is None:
+                    continue
+
                 models.append(model)
 
             self.tofu_buys_repo.save(models)
@@ -104,7 +105,7 @@ class DecoderService:
         contract_volumes
     ):
         decoded = self.web3_service.decode_input(query_abi, next_tran["input"])
-        currency = decoded["detail"][7]
+        currency = decoded["detail"][7].lower()
         value = decoded["detail"][8]
         contract_address = decoded["detail"][11][0][0]
         timestamp_unix = next_tran["timestamp_unix"]
@@ -116,6 +117,11 @@ class DecoderService:
         else:
             if currency in self.coin_id_map:
                 coin_id = self.coin_id_map[currency]
+
+        if coin_id is None:
+            print(
+                f'⚠️ Could not find coin id for address: {currency}, skipping tran: {next_tran["hash"]}')
+            return None
 
         date_str = next_tran["timestamp"].strftime("%d-%m-%Y")
 
@@ -154,10 +160,11 @@ class DecoderService:
                 minute=0,
                 second=0,
                 microsecond=0
-            )
+            ).timestamp()
+
             contract_volume = {
                 "date_str": date_str,
-                "timestamp": date_timestamp,
+                "date_timestamp": date_timestamp,
                 "updated": timestamp_unix,
                 "address": contract_address,
                 "name": contract_name,

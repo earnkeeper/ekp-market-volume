@@ -1,6 +1,6 @@
 import time
 
-from sdk.db.pg_client import PgClient
+from ekp_sdk.db import PgClient
 from sqlalchemy import (Boolean, Column, DateTime, Index, Integer, String, Table,
                         Text, desc, select)
 from sqlalchemy.dialects.postgresql import insert

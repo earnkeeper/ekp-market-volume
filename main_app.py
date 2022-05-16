@@ -1,99 +1,38 @@
-from decouple import config
-from dependency_injector import containers, providers
-from dependency_injector.wiring import Provide, inject
+from ekp_sdk import BaseContainer
 
 from app.features.collections.controller import CollectionsController
 from app.features.collections.service import CollectionsService
 from db.contract_volumes_repo import ContractVolumesRepo
-from sdk.db.pg_client import PgClient
-from sdk.services.cache_service import CacheService
-from sdk.services.client_service import ClientService
-from sdk.services.coingecko_service import CoingeckoService
-from sdk.services.redis_client import RedisClient
-from sdk.services.rest_client import RestClient
+from decouple import config
 
+class AppContainer(BaseContainer):
+    def __init__(self):
+        # TODO: this is needed to fix a quirk of the decouple library, don't remove it
+        POSTGRES_URI = config("POSTGRES_URI")
+        
+        super().__init__()
 
-class Container(containers.DeclarativeContainer):
+        # DB
 
-    # CONFIG
+        self.contract_volumes_repo = ContractVolumesRepo(
+            pg_client=self.pg_client,
+        )
 
-    POSTGRES_URI = config("POSTGRES_URI")
-    REDIS_URI = config("REDIS_URI", default="redis://localhost")
-    PORT = config("PORT", default=3001, cast=int)
-    EK_PLUGIN_ID = config("EK_PLUGIN_ID")
+        # FEATURES
 
-    # SDK
+        self.collections_service = CollectionsService(
+            contract_volumes_repo=self.contract_volumes_repo
+        )
 
-    redis_client = providers.Singleton(
-        RedisClient,
-        uri=REDIS_URI
-    )
-
-    rest_client = providers.Singleton(
-        RestClient,
-    )
-
-    pg_client = providers.Singleton(
-        PgClient,
-        uri=POSTGRES_URI,
-    )
-
-    coingecko_service = providers.Singleton(
-        CoingeckoService,
-        rest_client=rest_client
-    )
-
-    cache_service = providers.Singleton(
-        CacheService,
-        redis_client=redis_client,
-    )
-
-    contract_volumes_repo = providers.Singleton(
-        ContractVolumesRepo,
-        pg_client=pg_client,
-    )
-
-    # CLIENT
-
-    client_service = providers.Singleton(
-        ClientService,
-        port=PORT,
-        plugin_id=EK_PLUGIN_ID
-    )
-
-    # DB
-
-    contract_volumes_repo = providers.Singleton(
-        ContractVolumesRepo,
-        pg_client=pg_client,
-    )
-
-    # FEATURES
-
-    collections_service = providers.Singleton(
-        CollectionsService,
-        contract_volumes_repo=contract_volumes_repo
-    )
-
-    collections_controller = providers.Singleton(
-        CollectionsController,
-        client_service=client_service,
-        collections_service=collections_service
-    )
-
-
-@inject
-def main(
-    client_service: ClientService = Provide[Container.client_service],
-    collections_controller: CollectionsController = Provide[Container.collections_controller]
-):
-    print("🚀 Application Start")
-    client_service.add_controller(collections_controller)
-    client_service.listen()
+        self.collections_controller = CollectionsController(
+            client_service=self.client_service,
+            collections_service=self.collections_service
+        )
 
 
 if __name__ == '__main__':
-    container = Container()
-    container.wire(modules=[__name__])
+    container = AppContainer()
 
-    main()
+    container.client_service.add_controller(container.collections_controller)
+
+    container.client_service.listen()

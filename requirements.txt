@@ -1,16 +1,1 @@
-# Shared
-aiohttp
-aioredis
-aioretry
-autopep8
-dependency-injector
-psycopg2
-python-decouple
-sqlalchemy
-# Job
-web3
-# App
-aiohttp_cors
-moment
-python-engineio
-python-socketio
+ekp-sdk==0.1.2

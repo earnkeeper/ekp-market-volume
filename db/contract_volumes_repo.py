@@ -1,5 +1,5 @@
 import time
-from sdk.db.pg_client import PgClient
+from ekp_sdk.db import PgClient
 from sqlalchemy import (Column, DateTime, Float, Integer, String, Table, desc,
                         select)
 from sqlalchemy.dialects.postgresql import insert
@@ -16,7 +16,7 @@ class ContractVolumesRepo:
             pg_client.meta_data,
             Column('date_str', String(16), primary_key=True),
             Column('address', String(42), primary_key=True),
-            Column('timestamp', DateTime(), index=True, nullable=False),
+            Column('date_timestamp', Integer(), index=True, nullable=False),
             Column('updated', Integer(), index=True, nullable=False),
             Column('name', String(128), nullable=True),
             Column('volume', Integer(), nullable=False),

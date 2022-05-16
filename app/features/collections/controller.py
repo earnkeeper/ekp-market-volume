@@ -1,7 +1,7 @@
 from app.features.collections.page import page
 from app.features.collections.service import CollectionsService
-from sdk.services.client_service import ClientService
-from sdk.ui.components import selected_currency
+from ekp_sdk.services import ClientService
+from ekp_sdk.ui import selected_currency
 
 COLLECTION_NAME = "collections"
 
@@ -31,7 +31,7 @@ class CollectionsController:
 
     async def on_client_state_changed(self, sid, event):
         await self.client_service.emit_busy(sid, COLLECTION_NAME)
-        
+
         currency = selected_currency(event)
 
         documents = self.collections_service.get_documents(currency)

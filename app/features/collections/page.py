@@ -1,7 +1,7 @@
 from app.utils.page_title import page_title
-from sdk.ui.components import (Column, Container, Datatable, collection,
-                               documents, format_currency, format_template,
-                               is_busy)
+from ekp_sdk.ui import (Chart, Column, Container, Datatable, collection,
+                        documents, ekp_map, format_currency,
+                        format_template, is_busy, json_array, sort_by)
 
 
 def page(COLLECTION_NAME):
@@ -24,7 +24,7 @@ def tableRow(COLLECTION_NAME):
             Column(
                 id="collectionAddress",
                 title="Address",
-                grow=0,
+                width="120px",
                 sortable=True,
                 searchable=True,
                 cell={
@@ -54,23 +54,107 @@ def tableRow(COLLECTION_NAME):
             ),
             Column(
                 id="volume24h",
-                title="Vol 24h",
+                title="24h Sales",
                 right=True,
                 sortable=True,
                 format={
                     "method": "commify",
                     "params": ["$.volume24h"]
                 },
-                width="120px"
+                width="100px"
             ),
             Column(
                 id="volume24hUsd",
-                title="Value 24h",
+                title="24h Volume",
                 sortable=True,
                 right=True,
                 format=format_currency("$.volume24hUsd", "$.fiatSymbol"),
-                grow=0,
-                width="120px"
+                width="140px"
+            ),
+            Column(
+                id="volume7d",
+                title="7d Sales",
+                right=True,
+                sortable=True,
+                format={
+                    "method": "commify",
+                    "params": ["$.volume7d"]
+                },
+                width="100px"
+            ),
+            Column(
+                id="volume7dUsd",
+                title="7d Volume",
+                sortable=True,
+                right=True,
+                format=format_currency("$.volume7dUsd", "$.fiatSymbol"),
+                width="140px"
+            ),
+            Column(
+                id="chart7d",
+                title="",
+                width="180px",
+                cell=chart_cell('$.chart7d.*')
             ),
         ]
+    )
+
+
+def chart_cell(path):
+    return Chart(
+        title="",
+        card=False,
+        type='line',
+        height=90,
+        series=[
+            {
+                "name": 'All',
+                "data": ekp_map(
+                    sort_by(
+                        json_array(path),
+                        '$.timestamp',
+                    ),
+                    ['$.timestamp_ms', '$.volume_usd'],
+                ),
+            },
+        ],
+        data=path,
+        options={
+            "chart": {
+                "zoom": {
+                    "enabled": False,
+                },
+                "toolbar": {
+                    "show": False,
+                },
+                "stacked": False,
+                "type": "line"
+            },
+            "markers": {
+                "size": 0
+            },
+            "stroke": {
+                "width": 3,
+                "curve": "smooth"
+            },
+            "grid": {
+                "show": False,
+            },
+            "dataLabels": {
+                "enabled": False,
+            },
+            "xaxis": {
+                "axisBorder": { "show": False },
+                "axisTicks": { "show": False },
+                "type": "datetime",
+                "labels": {
+                    "show": False
+                },
+            },
+            "yaxis": {
+                "labels": {
+                    "show": False
+                },
+            },
+        }
     )

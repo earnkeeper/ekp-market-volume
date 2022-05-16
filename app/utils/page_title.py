@@ -1,4 +1,4 @@
-from sdk.ui.components import Col, Icon, Row, Span
+from ekp_sdk.ui import Col, Icon, Row, Span
 
 
 def page_title(icon, title):
