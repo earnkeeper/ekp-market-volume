@@ -20,7 +20,7 @@ class CollectionsController:
         await self.client_service.emit_menu(
             sid,
             'bar-chart',
-            'Collections',
+            'Volumes',
             self.path
         )
         await self.client_service.emit_page(
