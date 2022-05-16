@@ -1,24 +1,103 @@
 from app.utils.page_title import page_title
 from ekp_sdk.ui import (Chart, Col, Column, Container, Datatable, Image, Link,
-                        Row, collection, documents, ekp_map, format_currency,
-                        format_mask_address, format_template, is_busy,
-                        json_array, sort_by)
+                        Row, collection, commify, documents, ekp_map,
+                        format_currency, format_mask_address, format_template,
+                        is_busy, json_array, sort_by)
 
 
-def page(COLLECTION_NAME):
+def page(TABLE_COLLECTION_NAME, CHART_COLLECTION_NAME):
     return Container(
         children=[
             page_title('bar-chart', 'Market Volumes'),
-            tableRow(COLLECTION_NAME)
+            chart_row(CHART_COLLECTION_NAME),
+            table_row(TABLE_COLLECTION_NAME)
         ]
     )
 
 
-def tableRow(COLLECTION_NAME):
+def chart_row(CHART_COLLECTION_NAME):
+    return Chart(
+        title="",
+        height=200,
+        type="line",
+        data=documents(CHART_COLLECTION_NAME),
+        options={
+            "chart": {
+                "zoom": {
+                    "enabled": False,
+                },
+                "toolbar": {
+                    "show": False,
+                },
+                "stacked": False,
+                "type": "line"
+            },
+            # "dataLabels": {
+            #     "enabled": False,
+            # },
+            "xaxis": {
+                "type": "datetime",
+            },
+            "yaxis": [
+                {
+                    "labels": {
+                        "show": False,
+                        "formatter": commify("$")
+                    },
+                },
+                {
+                    "labels": {
+                        "show": False,
+                        "formatter": commify("$")
+                    },
+                    "opposite": True,
+                },
+            ],
+            "labels": ekp_map(
+                sort_by(
+                    json_array(
+                        documents(CHART_COLLECTION_NAME)
+                    ),
+                    "$.timestamp_ms"
+                ), "$.timestamp_ms"
+            ),
+            "stroke": {
+                "width": [4, 4],
+                "curve": 'smooth',
+            }
+        },
+        series=[
+            {
+                "name": "Sales",
+                "type": "column",
+                "data": ekp_map(
+                    sort_by(
+                        json_array(documents(CHART_COLLECTION_NAME)),
+                        "$.timestamp_ms"),
+                    "$.volume"
+                )
+            },
+            {
+                "name": "Volume",
+                "type": "line",
+                "data": ekp_map(
+                    sort_by(
+                        json_array(documents(CHART_COLLECTION_NAME)),
+                        "$.timestamp_ms"
+                    ),
+                    "$.volume_fiat"
+                ),
+            },
+        ],
+
+    )
+
+
+def table_row(TABLE_COLLECTION_NAME):
     return Datatable(
         class_name="mt-1",
-        data=documents(COLLECTION_NAME),
-        busy_when=is_busy(collection(COLLECTION_NAME)),
+        data=documents(TABLE_COLLECTION_NAME),
+        busy_when=is_busy(collection(TABLE_COLLECTION_NAME)),
         default_sort_field_id="volume24hUsd",
         default_sort_asc=False,
         columns=[
@@ -100,12 +179,12 @@ def tableRow(COLLECTION_NAME):
                 format=format_currency("$.volume7dUsd", "$.fiatSymbol"),
                 width="140px"
             ),
-            Column(
-                id="chart7d",
-                title="",
-                width="180px",
-                cell=chart_cell('$.chart7d.*')
-            ),
+            # Column(
+            #     id="chart7d",
+            #     title="",
+            #     width="180px",
+            #     cell=chart_cell('$.chart7d.*')
+            # ),
         ]
     )
 

@@ -105,6 +105,10 @@ class DecoderService:
         contract_volumes
     ):
         decoded = self.web3_service.decode_input(query_abi, next_tran["input"])
+        if decoded is None:
+            print(f'⚠️ Could not decode input for tran: {next_tran["hash"]}')
+            return None
+        
         currency = decoded["detail"][7].lower()
         value = decoded["detail"][8]
         contract_address = decoded["detail"][11][0][0]
@@ -120,7 +124,8 @@ class DecoderService:
 
         if coin_id is None:
             print(
-                f'⚠️ Could not find coin id for address: {currency}, skipping tran: {next_tran["hash"]}')
+                f'⚠️ Could not find coin id for address: {currency}, skipping tran: {next_tran["hash"]}'
+                )
             return None
 
         date_str = next_tran["timestamp"].strftime("%d-%m-%Y")

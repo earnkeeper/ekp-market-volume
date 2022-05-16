@@ -3,7 +3,8 @@ from app.features.collections.service import CollectionsService
 from ekp_sdk.services import ClientService
 from ekp_sdk.ui import selected_currency
 
-COLLECTION_NAME = "collections"
+TABLE_COLLECTION_NAME = "collection_volumes"
+CHART_COLLECTION_NAME = "volume_chart"
 
 
 class CollectionsController:
@@ -26,20 +27,31 @@ class CollectionsController:
         await self.client_service.emit_page(
             sid,
             self.path,
-            page(COLLECTION_NAME)
+            page(TABLE_COLLECTION_NAME, CHART_COLLECTION_NAME)
         )
 
     async def on_client_state_changed(self, sid, event):
-        await self.client_service.emit_busy(sid, COLLECTION_NAME)
+        await self.client_service.emit_busy(sid, TABLE_COLLECTION_NAME)
+        await self.client_service.emit_busy(sid, CHART_COLLECTION_NAME)
 
         currency = selected_currency(event)
 
-        documents = self.collections_service.get_documents(currency)
-
+        chart_documents = await self.collections_service.get_chart_documents(currency)
+        
         await self.client_service.emit_documents(
             sid,
-            COLLECTION_NAME,
-            documents
+            CHART_COLLECTION_NAME,
+            chart_documents
+        )
+        
+        await self.client_service.emit_done(sid, CHART_COLLECTION_NAME)
+
+        table_documents = await self.collections_service.get_table_documents(currency)
+        
+        await self.client_service.emit_documents(
+            sid,
+            TABLE_COLLECTION_NAME,
+            table_documents
         )
 
-        await self.client_service.emit_done(sid, COLLECTION_NAME)
+        await self.client_service.emit_done(sid, TABLE_COLLECTION_NAME)
