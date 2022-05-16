@@ -53,6 +53,8 @@ class DecoderService:
             return {
                 'date_str': model["date_str"],
                 'address': model["address"],
+                'timestamp': model["timestamp"],
+                'updated': model["updated"],
                 'name': model["name"],
                 'volume': model["volume"],
                 'volume_usd': model["volume_usd"],
@@ -105,7 +107,7 @@ class DecoderService:
         currency = decoded["detail"][7]
         value = decoded["detail"][8]
         contract_address = decoded["detail"][11][0][0]
-
+        timestamp_unix = next_tran["timestamp_unix"]
         coin_id = None
 
         if currency == "0x0000000000000000000000000000000000000000":
@@ -141,14 +143,22 @@ class DecoderService:
 
         if contract_volume is None:
 
-            contract_name_key = f"contract_name_{contract_address}"
+            contract_name_key = f"contract_name_v2_{contract_address}"
             contract_name = await self.cache_service.wrap(
                 key=contract_name_key,
-                fn=lambda: self.etherscan_service.get_contract_name(
-                    contract_address)
+                fn=lambda: self.__get_contract_name(contract_address)
+            )
+
+            date_timestamp = next_tran["timestamp"].replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0
             )
             contract_volume = {
                 "date_str": date_str,
+                "timestamp": date_timestamp,
+                "updated": timestamp_unix,
                 "address": contract_address,
                 "name": contract_name,
                 "volume": 0,
@@ -156,6 +166,9 @@ class DecoderService:
             }
 
             contract_volumes.append(contract_volume)
+
+        if timestamp_unix > contract_volume["updated"]:
+            contract_volume["updated"] = timestamp_unix
 
         contract_volume["volume"] = contract_volume["volume"] + 1
         contract_volume["volume_usd"] = contract_volume["volume_usd"] + value_usd
@@ -172,3 +185,9 @@ class DecoderService:
             'timestamp': next_tran["timestamp"],
             'timestamp_unix': next_tran["timestamp_unix"],
         }
+
+    async def __get_contract_name(self, contract_address):
+        name = await self.web3_service.get_token_name(contract_address)
+        if not name:
+            name = await self.etherscan_service.get_contract_name(contract_address)
+        return name

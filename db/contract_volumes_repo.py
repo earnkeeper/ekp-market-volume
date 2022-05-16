@@ -16,6 +16,8 @@ class ContractVolumesRepo:
             pg_client.meta_data,
             Column('date_str', String(16), primary_key=True),
             Column('address', String(42), primary_key=True),
+            Column('timestamp', DateTime(), index=True, nullable=False),
+            Column('updated', Integer(), index=True, nullable=False),
             Column('name', String(128), nullable=True),
             Column('volume', Integer(), nullable=False),
             Column('volume_usd', Float(), nullable=False),

@@ -61,10 +61,18 @@ class Container(containers.DeclarativeContainer):
         plugin_id=EK_PLUGIN_ID
     )
 
+    # DB
+
+    contract_volumes_repo = providers.Singleton(
+        ContractVolumesRepo,
+        pg_client=pg_client,
+    )
+
     # FEATURES
 
     collections_service = providers.Singleton(
         CollectionsService,
+        contract_volumes_repo=contract_volumes_repo
     )
 
     collections_controller = providers.Singleton(
@@ -76,9 +84,11 @@ class Container(containers.DeclarativeContainer):
 
 @inject
 def main(
-    client_service: ClientService = Provide[Container.client_service]
+    client_service: ClientService = Provide[Container.client_service],
+    collections_controller: CollectionsController = Provide[Container.collections_controller]
 ):
     print("🚀 Application Start")
+    client_service.add_controller(collections_controller)
     client_service.listen()
 
 

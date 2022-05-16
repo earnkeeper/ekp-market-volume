@@ -21,11 +21,13 @@ class ClientService:
 
         @sio.event
         async def connect(sid, environ, auth):
+            print(f"✨ Client connected: {sid} => {len(self.controllers)} controllers")
             for controller in self.controllers:
                 await controller.on_connect(sid)
 
         @sio.on('client-state-changed')
         async def on_client_state_changed(sid, data):
+            print(f"📣 Client state changed: {sid} => {len(self.controllers)} controllers")
             for controller in self.controllers:
                 await controller.on_client_state_changed(sid, json.loads(data))
 
@@ -53,24 +55,24 @@ class ClientService:
     def add_controller(self, controller):
         self.controllers.append(controller)
 
-    def emit_busy(self, sid, collection_name):
+    async def emit_busy(self, sid, collection_name):
         layer = {
             "id": f"busy-{collection_name}",
             "collectionName": "busy",
             "set": [{"id": collection_name, }],
             "timestamp": int(time.time())
         }
-        self.emit_add_layers(sid, [layer])
+        await self.emit_add_layers(sid, [layer])
 
-    def emit_done(self, sid, collection_name):
+    async def emit_done(self, sid, collection_name):
         message = {
             "query": {
                 "id": f'busy-{collection_name}',
             }
         }
-        self.sio.emit('remove-layers', json.dumps(message), room=sid)
+        await self.sio.emit('remove-layers', json.dumps(message), room=sid)
 
-    def emit_menu(self, sid, icon, title, nav_link):
+    async def emit_menu(self, sid, icon, title, nav_link):
         """
         Sends menu layer from server to the client side
         """
@@ -89,9 +91,9 @@ class ClientService:
             "timestamp": int(time.time())
         }
 
-        self.emit_add_layers(sid, [layer])
+        await self.emit_add_layers(sid, [layer])
 
-    def emit_page(self, sid, path, element):
+    async def emit_page(self, sid, path, element):
         """
         Sends main page content from server to the client side
         """
@@ -108,9 +110,9 @@ class ClientService:
             "timestamp": int(time.time())
         }
 
-        self.emit_add_layers(sid, [layer])
+        await self.emit_add_layers(sid, [layer])
 
-    def emit_documents(self, sid, collection_name, documents):
+    async def emit_documents(self, sid, collection_name, documents):
 
         layer = {
             "id": f"{self.plugin_id}_{collection_name}",
@@ -119,10 +121,11 @@ class ClientService:
             "timestamp": int(time.time())
         }
 
-        self.emit_add_layers(sid, [layer])
+        await self.emit_add_layers(sid, [layer])
 
-    def emit_add_layers(self, sid, layers):
+    async def emit_add_layers(self, sid, layers):
         message = {
             "layers": layers
         }
-        self.sio.emit('add-layers', json.dumps(message), room=sid)
+
+        await self.sio.emit('add-layers', json.dumps(message), room=sid)

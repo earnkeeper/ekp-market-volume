@@ -19,7 +19,7 @@ class Web3Service:
 
     async def get_currency_decimals(self, address):
         start = time.perf_counter()
-        
+
         address = Web3.toChecksumAddress(address)
 
         decimals_abi = [
@@ -39,7 +39,39 @@ class Web3Service:
         print(f'🐛 contract("{address}").decimals.call()')
 
         result = contract.functions.decimals().call()
-        
-        print(f"⏱  [web3_service.get_currency_decimals] {time.perf_counter() - start:0.3f}s")
-        
+
+        print(
+            f"⏱  [web3_service.get_currency_decimals] {time.perf_counter() - start:0.3f}s")
+
         return result
+
+    async def get_token_name(self, address):
+        start = time.perf_counter()
+
+        try:
+            address = Web3.toChecksumAddress(address)
+
+            name_abi = [
+                {
+                    "inputs": [],
+                    "name": "name",
+                    "outputs": [{"internalType": "string", "name": "", "type": "string"}],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ]
+
+            contract = self.w3.eth.contract(address=address, abi=name_abi)
+
+            print(f'🐛 contract("{address}").name.call()')
+
+            result = contract.functions.name().call()
+            
+            print(f"⏱  [web3_service.get_token_name] {time.perf_counter() - start:0.3f}s")
+            
+            return result
+        except:
+            print(f"🚨 [web3_service.get_token_name] {time.perf_counter() - start:0.3f}s")
+            return None
+
+
