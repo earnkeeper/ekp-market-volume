@@ -6,7 +6,6 @@ COPY ./requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY ./job ./job
-COPY ./sdk ./sdk
 COPY ./db ./db
 COPY ./main_job.py ./main_job.py
 
