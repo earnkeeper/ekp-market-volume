@@ -13,3 +13,4 @@ flask-cors
 moment
 python-engineio
 python-socketio
+aiohttp_cors

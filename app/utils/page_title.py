@@ -1,4 +1,4 @@
-from sdk.components.components import Col, Icon, Row, Span
+from sdk.ui.components import Col, Icon, Row, Span
 
 
 def page_title(icon, title):

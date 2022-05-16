@@ -1,7 +1,10 @@
-from aiohttp import web
-import socketio
 import json
 import time
+
+import aiohttp_cors
+import socketio
+from aiohttp import web
+
 
 class ClientService:
     def __init__(self, port, plugin_id):
@@ -9,11 +12,12 @@ class ClientService:
         self.plugin_id = plugin_id
         self.sio = self.__get_socket_io()
         self.app = self.__get_web_app()
-        self.app.wsgi_app = socketio.ASGIApp(self.sio, self.app)
+        self.sio.attach(self.app)
         self.controllers = []
 
     def __get_socket_io(self):
-        sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
+        sio = socketio.AsyncServer(
+            async_mode='aiohttp', cors_allowed_origins='*')
 
         @sio.event
         async def connect(sid, environ, auth):
@@ -29,17 +33,26 @@ class ClientService:
 
     def __get_web_app(self):
         app = web.Application()
-        
-        app.router.add_static('/static', 'static')
+
+        cors = aiohttp_cors.setup(app, defaults={
+            "*": aiohttp_cors.ResourceOptions(
+                allow_credentials=True,
+                expose_headers="*",
+                allow_methods="*",
+                allow_headers="*",
+            )
+        })
+
+        cors.add(app.router.add_static('/static', 'static'))
 
         return app
 
     def listen(self):
-        web.run_app(self.app)
+        web.run_app(self.app, port=self.port)
 
     def add_controller(self, controller):
         self.controllers.append(controller)
-        
+
     def emit_busy(self, sid, collection_name):
         layer = {
             "id": f"busy-{collection_name}",
