@@ -4,6 +4,7 @@ metadata:
   name: job
 spec:
   schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -12,7 +13,7 @@ spec:
             job: job
         spec:
           restartPolicy: Never
-          concurrencyPolicy: Forbid
+
           containers:
             - name: python
               image: "{{ .Values.werf.image.job }}"
