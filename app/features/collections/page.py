@@ -179,12 +179,12 @@ def table_row(TABLE_COLLECTION_NAME):
                 format=format_currency("$.volume7dUsd", "$.fiatSymbol"),
                 width="140px"
             ),
-            # Column(
-            #     id="chart7d",
-            #     title="",
-            #     width="180px",
-            #     cell=chart_cell('$.chart7d.*')
-            # ),
+            Column(
+                id="chart7d",
+                title="",
+                width="180px",
+                cell=chart_cell('$.chart7d.*')
+            ),
         ]
     )
 
