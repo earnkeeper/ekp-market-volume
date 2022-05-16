@@ -7,3 +7,9 @@ psycopg2
 python-decouple
 sqlalchemy
 web3
+# App
+Flask
+flask-cors
+moment
+python-engineio
+python-socketio

@@ -1,0 +1,115 @@
+from aiohttp import web
+import socketio
+import json
+import time
+
+class ClientService:
+    def __init__(self, port, plugin_id):
+        self.port = port
+        self.plugin_id = plugin_id
+        self.sio = self.__get_socket_io()
+        self.app = self.__get_web_app()
+        self.app.wsgi_app = socketio.ASGIApp(self.sio, self.app)
+        self.controllers = []
+
+    def __get_socket_io(self):
+        sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
+
+        @sio.event
+        async def connect(sid, environ, auth):
+            for controller in self.controllers:
+                await controller.on_connect(sid)
+
+        @sio.on('client-state-changed')
+        async def on_client_state_changed(sid, data):
+            for controller in self.controllers:
+                await controller.on_client_state_changed(sid, json.loads(data))
+
+        return sio
+
+    def __get_web_app(self):
+        app = web.Application()
+        
+        app.router.add_static('/static', 'static')
+
+        return app
+
+    def listen(self):
+        web.run_app(self.app)
+
+    def add_controller(self, controller):
+        self.controllers.append(controller)
+        
+    def emit_busy(self, sid, collection_name):
+        layer = {
+            "id": f"busy-{collection_name}",
+            "collectionName": "busy",
+            "set": [{"id": collection_name, }],
+            "timestamp": int(time.time())
+        }
+        self.emit_add_layers(sid, [layer])
+
+    def emit_done(self, sid, collection_name):
+        message = {
+            "query": {
+                "id": f'busy-{collection_name}',
+            }
+        }
+        self.sio.emit('remove-layers', json.dumps(message), room=sid)
+
+    def emit_menu(self, sid, icon, title, nav_link):
+        """
+        Sends menu layer from server to the client side
+        """
+
+        layer = {
+            "id": f"{self.plugin_id}_menu_{nav_link}",
+            "collectionName": "menus",
+            "set": [
+                {
+                    "id": f"{self.plugin_id}_{nav_link}",
+                    "icon": icon,
+                    "title": title,
+                    "navLink": nav_link,
+                }
+            ],
+            "timestamp": int(time.time())
+        }
+
+        self.emit_add_layers(sid, [layer])
+
+    def emit_page(self, sid, path, element):
+        """
+        Sends main page content from server to the client side
+        """
+
+        layer = {
+            "id": f"{self.plugin_id}_page_{path}",
+            "collectionName": "pages",
+            "set": [
+                {
+                    "id": path,
+                    "element": element
+                }
+            ],
+            "timestamp": int(time.time())
+        }
+
+        self.emit_add_layers(sid, [layer])
+
+    def emit_documents(self, sid, collection_name, documents):
+
+        layer = {
+            "id": f"{self.plugin_id}_{collection_name}",
+            "collectionName": collection_name,
+            "set": documents,
+            "timestamp": int(time.time())
+        }
+
+        self.emit_add_layers(sid, [layer])
+
+    def emit_add_layers(self, sid, layers):
+        message = {
+            "layers": layers
+        }
+        self.sio.emit('add-layers', json.dumps(message), room=sid)
