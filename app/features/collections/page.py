@@ -68,7 +68,7 @@ def chart_row(CHART_COLLECTION_NAME):
         },
         series=[
             {
-                "name": "Sales",
+                "name": "Sales Count",
                 "type": "column",
                 "data": ekp_map(
                     sort_by(
@@ -78,7 +78,7 @@ def chart_row(CHART_COLLECTION_NAME):
                 )
             },
             {
-                "name": "Volume",
+                "name": "Sales Value",
                 "type": "line",
                 "data": ekp_map(
                     sort_by(
@@ -161,7 +161,7 @@ def table_row(TABLE_COLLECTION_NAME):
             ),
             Column(
                 id="volume24hUsd",
-                title="24h Volume",
+                title="24h Value",
                 sortable=True,
                 right=True,
                 format=format_currency("$.volume24hUsd", "$.fiatSymbol"),
@@ -180,7 +180,7 @@ def table_row(TABLE_COLLECTION_NAME):
             ),
             Column(
                 id="volume7dUsd",
-                title="7d Volume",
+                title="7d Value",
                 sortable=True,
                 right=True,
                 format=format_currency("$.volume7dUsd", "$.fiatSymbol"),
@@ -210,7 +210,7 @@ def chart_cell(path):
                         json_array(path),
                         '$.timestamp',
                     ),
-                    ['$.timestamp_ms', '$.volume_usd'],
+                    ['$.timestamp_ms', '$.volume'],
                 ),
             },
         ],
