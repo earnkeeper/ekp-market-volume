@@ -107,4 +107,9 @@ class CollectionsService:
 
         documents = list(grouped_by_address.values())
 
+        for document in documents:
+            length = len(document["chart7d"])
+            if (length > 7):
+                document["chart7d"] = document["chart7d"][length-7:length-1]
+                
         return documents
