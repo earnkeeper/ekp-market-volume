@@ -15,7 +15,7 @@ class ContractVolumesRepo:
             'contract_volumes',
             pg_client.meta_data,
             Column('date_str', String(16), primary_key=True),
-            Column('address', String(42), primary_key=True),
+            Column('address', String(42), index=True, primary_key=True),
             Column('date_timestamp', Integer(), index=True, nullable=False),
             Column('updated', Integer(), index=True, nullable=False),
             Column('name', String(128), nullable=True),
@@ -25,12 +25,28 @@ class ContractVolumesRepo:
 
         pg_client.meta_data.create_all(pg_client.engine)
 
+    def find_all_by_address(self, address):
+        start = time.perf_counter()
+        
+        result = list(
+            self.pg_client.conn.execute(
+                select(self.table)
+                .where(self.table.c.address == address)
+                .order_by('date_timestamp')
+            )
+        )
+        
+        print(f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
+        
+        return result
+    
     def find_all(self):
         start = time.perf_counter()
         
         result = list(
             self.pg_client.conn.execute(
-                select(self.table).order_by('date_str')
+                select(self.table)
+                .order_by('date_timestamp')
             )
         )
         

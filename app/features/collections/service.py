@@ -1,8 +1,8 @@
-from datetime import datetime
+import copy
 
-from dateutil import parser
 from db.contract_volumes_repo import ContractVolumesRepo
 from ekp_sdk.services import CoingeckoService
+
 
 class CollectionsService:
     def __init__(
@@ -15,7 +15,7 @@ class CollectionsService:
 
     async def get_chart_documents(self, currency):
         records = self.contract_volumes_repo.find_all()
-        
+
         rate = await self.coingecko_service.get_latest_price('usd-coin', currency["id"])
 
         grouped_by_date_str = {}
@@ -49,16 +49,32 @@ class CollectionsService:
         return documents
 
     async def get_table_documents(self, currency):
-        records = self.contract_volumes_repo.find_all()
-        
         rate = await self.coingecko_service.get_latest_price('usd-coin', currency["id"])
-        
+
+        records = self.contract_volumes_repo.find_all()
+
+        latest_date_timestamp = records[len(records) - 1]["date_timestamp"]
+
+        chart7d_template = {}
+
+        for i in range(7):
+            chart_timestamp = latest_date_timestamp - 86400 * (6-i)
+            chart7d_template[chart_timestamp] = {
+                "timestamp": chart_timestamp,
+                "timestamp_ms": chart_timestamp * 1000,
+                "volume": 0,
+                "volume_usd": 0,
+            }
+
         grouped_by_address = {}
 
         for record in records:
             address = record["address"]
             date_timestamp = record["date_timestamp"]
             updated = record["updated"]
+            ago = latest_date_timestamp - date_timestamp
+            volume = record["volume"]
+            volume_usd = record["volume_usd"]
 
             if address not in grouped_by_address:
                 grouped_by_address[address] = {
@@ -69,47 +85,30 @@ class CollectionsService:
                     "volume7d": 0,
                     "volume24hUsd": 0,
                     "volume7dUsd": 0,
-                    "latestTimestamp": 0,
                     "updated": record["updated"],
                     "fiatSymbol": currency["symbol"],
-                    "chart7d": []
+                    "chart7d": copy.deepcopy(chart7d_template)
                 }
 
             group = grouped_by_address[address]
 
-            if date_timestamp > group["latestTimestamp"]:
-                group["latestTimestamp"] = date_timestamp
-
             if updated > group["updated"]:
                 group["updated"] = updated
 
-        for record in records:
-            address = record["address"]
-            date_timestamp = int(parser.parse(record["date_str"]).timestamp())
-            group = grouped_by_address[address]
-            ago = group["latestTimestamp"] - date_timestamp
-
-            if ago < 86400:
-                group["volume24h"] = group["volume24h"] + record["volume"]
+            if ago == 0:
+                group["volume24h"] = group["volume24h"] + volume
                 group["volume24hUsd"] = group["volume24hUsd"] + \
-                    record["volume_usd"] * rate
-            
+                    volume_usd * rate
+
             if ago < (86400 * 7):
-                group["volume7d"] = group["volume7d"] + record["volume"]
+                group["volume7d"] = group["volume7d"] + volume
                 group["volume7dUsd"] = group["volume7dUsd"] + \
                     record["volume_usd"] * rate
-                group["chart7d"].append({
-                    "timestamp": date_timestamp,
-                    "timestamp_ms": date_timestamp * 1000,
-                    "volume": record["volume"],
-                    "volume_usd": record["volume_usd"] * rate,
-                })
+
+            if date_timestamp in group["chart7d"]:
+                group["chart7d"][date_timestamp]["volume"] = volume
+                group["chart7d"][date_timestamp]["volume_usd"] = volume_usd * rate
 
         documents = list(grouped_by_address.values())
 
-        for document in documents:
-            length = len(document["chart7d"])
-            if (length > 7):
-                document["chart7d"] = document["chart7d"][length-7:length-1]
-                
         return documents

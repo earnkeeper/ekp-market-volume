@@ -1,7 +1,7 @@
 from app.features.collections.page import page
 from app.features.collections.service import CollectionsService
 from ekp_sdk.services import ClientService
-from ekp_sdk.ui import selected_currency
+from ekp_sdk.util import client_currency, client_path
 
 TABLE_COLLECTION_NAME = "collection_volumes"
 CHART_COLLECTION_NAME = "volume_chart"
@@ -31,10 +31,14 @@ class CollectionsController:
         )
 
     async def on_client_state_changed(self, sid, event):
+        path = client_path(event)
+        if not path.startswith("collections"):
+            return
+
         await self.client_service.emit_busy(sid, TABLE_COLLECTION_NAME)
         await self.client_service.emit_busy(sid, CHART_COLLECTION_NAME)
 
-        currency = selected_currency(event)
+        currency = client_currency(event)
 
         chart_documents = await self.collections_service.get_chart_documents(currency)
         

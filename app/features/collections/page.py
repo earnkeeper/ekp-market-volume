@@ -2,7 +2,7 @@ from app.utils.page_title import page_title
 from ekp_sdk.ui import (Chart, Col, Column, Container, Datatable, Image, Link,
                         Row, collection, commify, documents, ekp_map,
                         format_currency, format_mask_address, format_template,
-                        is_busy, json_array, sort_by)
+                        is_busy, json_array, sort_by, navigate)
 
 
 def page(TABLE_COLLECTION_NAME, CHART_COLLECTION_NAME):
@@ -98,8 +98,15 @@ def table_row(TABLE_COLLECTION_NAME):
         class_name="mt-1",
         data=documents(TABLE_COLLECTION_NAME),
         busy_when=is_busy(collection(TABLE_COLLECTION_NAME)),
-        default_sort_field_id="volume24hUsd",
+        default_sort_field_id="volume24h",
         default_sort_asc=False,
+        on_row_clicked=navigate(
+            location=format_template(
+                "collection/{{ address }}",
+                {"address": "$.collectionAddress"}
+            ),
+            new_tab=True
+        ),
         columns=[
             Column(
                 id="collectionAddress",
