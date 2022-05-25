@@ -21,7 +21,7 @@ class CollectionsController:
         await self.client_service.emit_menu(
             sid,
             'bar-chart',
-            'Volumes',
+            'Market Volumes',
             self.path
         )
         await self.client_service.emit_page(
