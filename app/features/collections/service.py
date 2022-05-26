@@ -113,6 +113,8 @@ class CollectionsService:
                 group["chart7d"][date_timestamp]["volume"] = volume
                 group["chart7d"][date_timestamp]["volume_usd"] = volume_usd * rate
 
-        documents = list(grouped_by_address.values())
+        documents = list(
+            filter(lambda x: x["volume7d"], grouped_by_address.values())
+        )
 
         return documents
