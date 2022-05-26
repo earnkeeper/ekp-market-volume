@@ -21,7 +21,7 @@ spec:
           workingDir: /app
           env:
             - name: EK_PLUGIN_ID
-              value: { { .Chart.Name } }
+              value: "{{ .Chart.Name }}"
             - name: POSTGRES_URI
               value: "{{ .Values.postgres.uri }}"
             - name: REDIS_URI
@@ -31,7 +31,7 @@ spec:
             - name: PROXY_PORT
               value: "{{ .Values.proxy.port }}"
             - name: SPREADSHEET_ID
-              value: '{{ .Values.spreadsheetId }}'
+              value: "{{ .Values.spreadsheetId }}"
           ports:
             - containerPort: 3001
               protocol: TCP
