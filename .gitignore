@@ -169,3 +169,4 @@ sqlalchemy_testing.py
 TODO
 
 nodemon.json
+secret/**/*

@@ -5,6 +5,7 @@ from app.features.collection.service import SingleCollectionsService
 
 from app.features.collections.controller import CollectionsController
 from app.features.collections.service import CollectionsService
+from app.features.collections.sheets_client import SheetsClient
 from db.contract_volumes_repo import ContractVolumesRepo
 
 
@@ -12,8 +13,12 @@ class AppContainer(BaseContainer):
     def __init__(self):
         config = AutoConfig(".env")
         
+        SPREADSHEET_ID = config("SPREADSHEET_ID")
+        
         super().__init__(config)
 
+        self.sheets_client = SheetsClient()
+        
         # DB
 
         self.contract_volumes_repo = ContractVolumesRepo(
@@ -24,7 +29,9 @@ class AppContainer(BaseContainer):
 
         self.collections_service = CollectionsService(
             contract_volumes_repo=self.contract_volumes_repo,
-            coingecko_service=self.coingecko_service
+            coingecko_service=self.coingecko_service,
+            sheets_client=self.sheets_client,
+            sheet_id=SPREADSHEET_ID
         )
         self.collections_controller = CollectionsController(
             client_service=self.client_service,

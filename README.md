@@ -39,6 +39,7 @@ Run the following to generate a secret key and encrypt your settings.
 ```
 werf helm secret generate-secret-key | tr -d '\n' >  .werf_secret_key
 werf helm secret values encrypt clear-values.yaml -o .helm/secret-values.yaml
+werf helm secret file encrypt secret/credentials.json -o .helm/secret/credentials.json
 ```
 
 Set the following two secrets on your github repo:

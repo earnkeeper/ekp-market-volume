@@ -196,9 +196,7 @@ def table_row(TABLE_COLLECTION_NAME):
                         class_name="col-auto",
                         children=[
                             Link(
-                                href=format_template("https://tofunft.com/collection/{{ slug }}", {
-                                    "slug": "$.collectionSlug"
-                                }),
+                                href="$.collectionLink",
                                 external=True,
                                 external_icon=True,
                                 content="$.collectionName"

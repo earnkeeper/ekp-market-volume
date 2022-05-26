@@ -1,4 +1,5 @@
 import copy
+from app.features.collections.sheets_client import SheetsClient
 
 from db.contract_volumes_repo import ContractVolumesRepo
 from ekp_sdk.services import CoingeckoService
@@ -9,9 +10,13 @@ class CollectionsService:
         self,
         contract_volumes_repo: ContractVolumesRepo,
         coingecko_service: CoingeckoService,
+        sheets_client: SheetsClient,
+        sheet_id: str
     ):
         self.contract_volumes_repo = contract_volumes_repo
         self.coingecko_service = coingecko_service
+        self.sheets_client = sheets_client
+        self.sheet_id = sheet_id
 
     async def get_chart_documents(self, currency):
         records = self.contract_volumes_repo.find_all()
@@ -70,6 +75,16 @@ class CollectionsService:
             }
 
         grouped_by_address = {}
+        
+        sheets_range = self.sheets_client.get_range(self.sheet_id, "tofu_collections!A2:C")
+        
+        sheets_map = {}
+        
+        for row in sheets_range:
+            if len(row) < 2:
+                continue
+            
+            sheets_map[row[0]] = row
 
         for record in records:
             address = record["address"]
@@ -80,10 +95,22 @@ class CollectionsService:
             volume_usd = record["volume_usd"]
 
             if address not in grouped_by_address:
+                collection_link = f'https://tofunft.com/collection/{title_to_kebab(record["name"])}/items'
+                sheets_row = None
+                
+                if address in sheets_map:
+                    sheets_row = sheets_map[address]
+                
+                if sheets_row:
+                    if len(row) > 2 and row[2]:
+                        continue
+                
+                    collection_link=row[1]
+                    
                 grouped_by_address[address] = {
                     "collectionAddress": address,
                     "collectionName": record["name"],
-                    "collectionSlug": title_to_kebab(record["name"]),
+                    "collectionLink": collection_link,
                     "blockchain": "BSC",
                     "volume24h": 0,
                     "volume7d": 0,

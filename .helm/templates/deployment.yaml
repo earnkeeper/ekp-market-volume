@@ -17,11 +17,11 @@ spec:
     spec:
       containers:
         - name: python
-          image: '{{ .Values.werf.image.app }}'
+          image: "{{ .Values.werf.image.app }}"
           workingDir: /app
           env:
             - name: EK_PLUGIN_ID
-              value: {{ .Chart.Name }}
+              value: { { .Chart.Name } }
             - name: POSTGRES_URI
               value: "{{ .Values.postgres.uri }}"
             - name: REDIS_URI
@@ -30,6 +30,17 @@ spec:
               value: "{{ .Values.proxy.host }}"
             - name: PROXY_PORT
               value: "{{ .Values.proxy.port }}"
+            - name: SPREADSHEET_ID
+              value: '{{ .Values.spreadsheetId }}'
           ports:
             - containerPort: 3001
               protocol: TCP
+          volumeMounts:
+            - name: secret-files
+              mountPath: "/app/secret"
+              readOnly: true
+      volumes:
+        - name: secret-files
+          secret:
+            secretName: secret-files
+            optional: false
