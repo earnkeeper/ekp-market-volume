@@ -2,17 +2,55 @@ from app.utils.page_title import page_title
 from ekp_sdk.ui import (Chart, Col, Column, Container, Datatable, Image, Link,
                         Row, collection, commify, documents, ekp_map,
                         format_currency, format_mask_address, format_template,
-                        is_busy, json_array, sort_by, navigate)
+                        is_busy, json_array, sort_by, navigate, Card, Span, Paragraphs, Div)
 
 
 def page(TABLE_COLLECTION_NAME, CHART_COLLECTION_NAME):
     return Container(
         children=[
             page_title('bar-chart', 'Market Volumes'),
+            Paragraphs([
+                "Sales Volume is the #1 indicator for interest in a project, we aggregate sales volumes from popular play to earn market places and directly from game markets.",
+                "Follow along below, with 24h and 7d volumes for each project."
+            ]),
+            sources_row(),
             chart_row(CHART_COLLECTION_NAME),
             table_row(TABLE_COLLECTION_NAME)
         ]
     )
+
+
+def sources_row():
+    return Row([
+        Col("col-12", [Span("Sources:", "font-small-3")]),
+        Col("col-12", [Div([], style={"marginTop": "0.5rem"})]),
+        Col(
+            "col-auto",
+            [
+                Card(
+                    class_name="py-1 pl-2 pr-3",
+                    children=[
+                        Row([
+                            Col(
+                                "col-auto pr-0",
+                                [
+                                    Image(
+                                        src="https://market-volume-staging.ekp.earnkeeper.io/static/tofu.png",
+                                        style={"height": "20px"}
+                                    )
+                                ]
+                            ),
+                            Col(
+                                "col-auto",
+                                [
+                                    Span("Tofu NFT")
+                                ]
+                            )
+                        ])
+                    ])
+            ]
+        )
+    ])
 
 
 def chart_row(CHART_COLLECTION_NAME):
@@ -32,9 +70,6 @@ def chart_row(CHART_COLLECTION_NAME):
                 "stacked": False,
                 "type": "line"
             },
-            # "dataLabels": {
-            #     "enabled": False,
-            # },
             "xaxis": {
                 "type": "datetime",
             },
@@ -111,7 +146,7 @@ def table_row(TABLE_COLLECTION_NAME):
             Column(
                 id="collectionAddress",
                 title="Address",
-                width="180px",
+                width="210px",
                 sortable=True,
                 searchable=True,
                 cell=Row(
@@ -147,15 +182,30 @@ def table_row(TABLE_COLLECTION_NAME):
                 sortable=True,
                 searchable=True,
                 title="Collection Name",
-                cell=Link(
-                    href=format_template("https://tofunft.com/collection/{{ slug }}", {
-                        "slug": "$.collectionSlug"
-                    }),
-                    external=True,
-                    external_icon=True,
-                    content="$.collectionName"
-                )
-
+                cell=Row([
+                    Col(
+                        class_name="col-auto pr-0",
+                        children=[
+                            Image(
+                                src="https://market-volume-staging.ekp.earnkeeper.io/static/tofu.png",
+                                style={"height": "16px"}
+                            )
+                        ]
+                    ),
+                    Col(
+                        class_name="col-auto",
+                        children=[
+                            Link(
+                                href=format_template("https://tofunft.com/collection/{{ slug }}", {
+                                    "slug": "$.collectionSlug"
+                                }),
+                                external=True,
+                                external_icon=True,
+                                content="$.collectionName"
+                            )
+                        ]
+                    )
+                ])
             ),
             Column(
                 id="volume24h",
