@@ -167,3 +167,5 @@ cython_debug/
 clear-values.yaml
 sqlalchemy_testing.py
 TODO
+
+nodemon.json

@@ -26,7 +26,7 @@ class SingleCollectionController:
 
     async def on_client_state_changed(self, sid, event):
         path = client_path(event)
-        if not path.startswith("collection/"):
+        if not path or not path.startswith("collection/"):
             return
         
         await self.client_service.emit_busy(sid, CHART_COLLECTION_NAME)

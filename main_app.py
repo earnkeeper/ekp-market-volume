@@ -1,4 +1,4 @@
-from decouple import config
+from decouple import AutoConfig
 from ekp_sdk import BaseContainer
 from app.features.collection.controller import SingleCollectionController
 from app.features.collection.service import SingleCollectionsService
@@ -10,10 +10,9 @@ from db.contract_volumes_repo import ContractVolumesRepo
 
 class AppContainer(BaseContainer):
     def __init__(self):
-        # TODO: this is needed to fix a quirk of the decouple library, don't remove it
-        POSTGRES_URI = config("POSTGRES_URI")
-
-        super().__init__()
+        config = AutoConfig(".env")
+        
+        super().__init__(config)
 
         # DB
 

@@ -133,7 +133,7 @@ def table_row(TABLE_COLLECTION_NAME):
                                         "address": "$.collectionAddress"
                                     }),
                                     external=True,
-                                    externalIcon=True,
+                                    external_icon=True,
                                     content=format_mask_address(
                                         "$.collectionAddress")
                                 )
@@ -146,7 +146,16 @@ def table_row(TABLE_COLLECTION_NAME):
                 id="collectionName",
                 sortable=True,
                 searchable=True,
-                title="Collection Name"
+                title="Collection Name",
+                cell=Link(
+                    href=format_template("https://tofunft.com/collection/{{ slug }}", {
+                        "slug": "$.collectionSlug"
+                    }),
+                    external=True,
+                    external_icon=True,
+                    content="$.collectionName"
+                )
+
             ),
             Column(
                 id="volume24h",

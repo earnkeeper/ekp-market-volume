@@ -15,7 +15,7 @@ def page(TABLE_COLLECTION_NAME, CHART_COLLECTION_NAME):
                     "address": f"$.{CHART_COLLECTION_NAME}[0].address"
                 }),
                 external=True,
-                externalIcon=True,
+                external_icon=True,
                 content=f'$.{CHART_COLLECTION_NAME}[0].address'
             ),
             Div(class_name="d-block mb-2", children=[]),

@@ -2,7 +2,7 @@ import copy
 
 from db.contract_volumes_repo import ContractVolumesRepo
 from ekp_sdk.services import CoingeckoService
-
+from app.utils.strings import title_to_kebab
 
 class CollectionsService:
     def __init__(
@@ -53,6 +53,9 @@ class CollectionsService:
 
         records = self.contract_volumes_repo.find_all()
 
+        if not len(records):
+            return []
+        
         latest_date_timestamp = records[len(records) - 1]["date_timestamp"]
 
         chart7d_template = {}
@@ -80,6 +83,7 @@ class CollectionsService:
                 grouped_by_address[address] = {
                     "collectionAddress": address,
                     "collectionName": record["name"],
+                    "collectionSlug": title_to_kebab(record["name"]),
                     "blockchain": "BSC",
                     "volume24h": 0,
                     "volume7d": 0,

@@ -32,7 +32,7 @@ class CollectionsController:
 
     async def on_client_state_changed(self, sid, event):
         path = client_path(event)
-        if not path.startswith("collections"):
+        if not path or not path.startswith("collections"):
             return
 
         await self.client_service.emit_busy(sid, TABLE_COLLECTION_NAME)

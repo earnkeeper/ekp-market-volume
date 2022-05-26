@@ -1,6 +1,6 @@
 import asyncio
 
-from decouple import config
+from decouple import AutoConfig
 from ekp_sdk import BaseContainer
 
 from db.contract_volumes_repo import ContractVolumesRepo
@@ -14,9 +14,11 @@ MARKET_CONTRACT = '0x449d05c544601631785a7c062dcdff530330317e'
 
 class AppContainer(BaseContainer):
     def __init__(self):
+        config = AutoConfig(".env")
+        
         MAX_TRANS_TO_FETCH = config("MAX_TRANS_TO_FETCH", cast=int, default=0)
 
-        super().__init__()
+        super().__init__(config)
 
         self.contract_volumes_repo = ContractVolumesRepo(
             pg_client=self.pg_client,
