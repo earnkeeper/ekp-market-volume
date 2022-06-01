@@ -1,8 +1,7 @@
 import copy
-from app.features.collections.sheets_client import SheetsClient
 
 from db.contract_volumes_repo import ContractVolumesRepo
-from ekp_sdk.services import CoingeckoService
+from ekp_sdk.services import CoingeckoService, GoogleSheetsClient
 from app.utils.strings import title_to_kebab
 
 class CollectionsService:
@@ -10,7 +9,7 @@ class CollectionsService:
         self,
         contract_volumes_repo: ContractVolumesRepo,
         coingecko_service: CoingeckoService,
-        sheets_client: SheetsClient,
+        sheets_client: GoogleSheetsClient,
         sheet_id: str
     ):
         self.contract_volumes_repo = contract_volumes_repo

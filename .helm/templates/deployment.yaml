@@ -31,7 +31,9 @@ spec:
             - name: PROXY_PORT
               value: "{{ .Values.proxy.port }}"
             - name: SPREADSHEET_ID
-              value: "{{ .Values.spreadsheetId }}"
+              value: "{{ .Values.sheets.sheetId }}"
+            - name: GOOGLE_SHEETS_CREDENTIALS_FILE
+              value: "{{ .Values.sheets.credentialsFile }}"
           ports:
             - containerPort: 3001
               protocol: TCP
