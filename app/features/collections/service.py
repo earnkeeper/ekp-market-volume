@@ -93,18 +93,27 @@ class CollectionsService:
             volume = record["volume"]
             volume_usd = record["volume_usd"]
 
+            kebab_name = record["name"]
+            
+            if " " in kebab_name:
+                kebab_name = kebab_name.replace(" ", "-").lower()
+            else:
+                kebab_name = title_to_kebab(kebab_name)
+                
             if address not in grouped_by_address:
-                collection_link = f'https://tofunft.com/collection/{title_to_kebab(record["name"])}/items'
+                collection_link = f'https://tofunft.com/collection/{title_to_kebab(kebab_name)}/items'
                 sheets_row = None
                 
                 if address in sheets_map:
                     sheets_row = sheets_map[address]
+                    if address == "0x85F0e02cb992aa1F9F47112F815F519EF1A59E2D":
+                        print(sheets_row)                    
                 
                 if sheets_row:
-                    if len(row) > 2 and row[2]:
+                    if len(sheets_row) > 2 and sheets_row[2] == "y":
                         continue
                 
-                    collection_link=row[1]
+                    collection_link=sheets_row[1]
                     
                 grouped_by_address[address] = {
                     "collectionAddress": address,

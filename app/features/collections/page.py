@@ -182,6 +182,7 @@ def table_row(TABLE_COLLECTION_NAME):
                 sortable=True,
                 searchable=True,
                 title="Collection Name",
+                min_width="300px",
                 cell=Row([
                     Col(
                         class_name="col-auto pr-0",
