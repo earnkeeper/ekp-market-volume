@@ -5,6 +5,8 @@ from app.features.collection.service import SingleCollectionsService
 
 from app.features.collections.controller import CollectionsController
 from app.features.collections.service import CollectionsService
+from app.features.embeds.embeds_controller import EmbedsController
+from app.features.embeds.embeds_service import EmbedsService
 from db.contract_volumes_repo import ContractVolumesRepo
 
 
@@ -44,11 +46,23 @@ class AppContainer(BaseContainer):
             collection_service=self.collection_service
         )
 
+        # EMBEDS
+        
+        self.embeds_service = EmbedsService(
+            contract_volumes_repo=self.contract_volumes_repo,
+            coingecko_service=self.coingecko_service
+        )
+        
+        self.embeds_controller = EmbedsController(
+            client_service=self.client_service,
+            embeds_service=self.embeds_service,
+        )
 
 if __name__ == '__main__':
     container = AppContainer()
 
     container.client_service.add_controller(container.collections_controller)
     container.client_service.add_controller(container.collection_controller)
+    container.client_service.add_controller(container.embeds_controller)
 
     container.client_service.listen()

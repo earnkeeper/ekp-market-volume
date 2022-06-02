@@ -1,7 +1,7 @@
 import time
 from ekp_sdk.db import PgClient
 from sqlalchemy import (Column, DateTime, Float, Integer, String, Table, desc,
-                        select)
+                        select, func)
 from sqlalchemy.dialects.postgresql import insert
 
 
@@ -27,7 +27,7 @@ class ContractVolumesRepo:
 
     def find_all_by_address(self, address):
         start = time.perf_counter()
-        
+
         result = list(
             self.pg_client.conn.execute(
                 select(self.table)
@@ -35,28 +35,62 @@ class ContractVolumesRepo:
                 .order_by('date_timestamp')
             )
         )
-        
-        print(f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
-        
+
+        print(
+            f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
+
         return result
-    
+
+    def group_by_address_and_name(self, since, limit):
+        query = select([
+            self.table.c.address,
+            self.table.c.name,
+            func.sum(self.table.c.volume),
+            func.sum(self.table.c.volume_usd),
+        ]).where(
+            self.table.c.date_timestamp > since   
+        ).group_by(
+            self.table.c.address, 
+            self.table.c.name
+        ).order_by(func.sum(self.table.c.volume_usd).desc())
+        
+        results = self.pg_client.engine.execute(query).fetchmany(limit)
+        
+        rows = []
+        
+        i = 0
+        for result in results:
+            rows.append({
+                "address": result[0],
+                "name": result[1],
+                "volume": result[2],
+                "volume_usd": result[3],
+            })
+            i+=1
+            if i >= limit:
+                break
+            
+        return rows
+        # return self.table.query.with_entities(self.table.address, self.table.name, func.sum(self.table.volume), func.sum(self.table.volume_usd)).group_by(self.table.address, self.table.name).limit(10)
+
     def find_all(self):
         start = time.perf_counter()
-        
+
         result = list(
             self.pg_client.conn.execute(
                 select(self.table)
                 .order_by('date_timestamp')
             )
         )
-        
-        print(f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
-        
+
+        print(
+            f"⏱  [contract_volumes_repo.find_all] {time.perf_counter() - start:0.3f}s")
+
         return result
 
     def save(self, models):
         start = time.perf_counter()
-        
+
         stmt = insert(self.table)
         self.pg_client.conn.execute(
             stmt
@@ -69,5 +103,6 @@ class ContractVolumesRepo:
             ),
             models
         )
-        
-        print(f"⏱  [contract_volumes_repo.save] {time.perf_counter() - start:0.3f}s")
+
+        print(
+            f"⏱  [contract_volumes_repo.save] {time.perf_counter() - start:0.3f}s")
