@@ -25,13 +25,14 @@ class ContractVolumesRepo:
 
         pg_client.meta_data.create_all(pg_client.engine)
 
-    def find_all_by_address(self, address):
+    def find_all_by_address(self, address, since = 0):
         start = time.perf_counter()
 
         result = list(
             self.pg_client.conn.execute(
                 select(self.table)
                 .where(self.table.c.address == address)
+                .where(self.table.c.date_timestamp >= since)
                 .order_by('date_timestamp')
             )
         )
@@ -71,7 +72,6 @@ class ContractVolumesRepo:
                 break
             
         return rows
-        # return self.table.query.with_entities(self.table.address, self.table.name, func.sum(self.table.volume), func.sum(self.table.volume_usd)).group_by(self.table.address, self.table.name).limit(10)
 
     def find_all(self):
         start = time.perf_counter()

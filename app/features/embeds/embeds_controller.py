@@ -22,8 +22,6 @@ class EmbedsController:
                 
         embeds = await self.embeds_service.get_embeds(currency)
         
-        pprint(embeds)
-        
         await self.client_service.emit_documents(
             sid,
             "embeds",

@@ -38,20 +38,19 @@ class EmbedsService:
 
             chart_30d = []
 
-            # TODO
-            # records_30d = self.contract_volumes_repo.find_all_by_address_since(address, timestamp_30d_ago)
+            records_30d = self.contract_volumes_repo.find_all_by_address(address, since=timestamp_30d_ago)
 
-            # for record in records_30d:
-            #     chart_30d.append({
-            #         "timestamp_ms": record["timestamp"],
-            #         "sales": record["volume"],
-            #         "volume": record["volume_usd"] * rate
-            #     })
+            for record in records_30d:
+                chart_30d.append({
+                    "timestamp_ms": record["date_timestamp"] * 1000,
+                    "sales": record["volume"],
+                    "volume": record["volume_usd"] * rate
+                })
 
             data_document = {
                 "address": address,
                 "name": name,
-                "rank": i,
+                "rank": i + 1,
                 "sales24h": sales24h,
                 "volume24h": volume24h * rate,
                 "fiatSymbol": currency["symbol"],
