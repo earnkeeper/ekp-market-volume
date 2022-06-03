@@ -58,11 +58,11 @@ class EmbedsService:
             }
 
             embed = {
-                "id": 'market_volume_1',
+                "id": f'market_volume_{i+1}',
                 "size": 'tile',
                 "element": embed_tile(),
                 "data": [data_document],
-                "page": 'collections',
+                "page": '/game/all/collections',
             }
 
             embeds.append(embed)
