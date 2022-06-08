@@ -6,5 +6,5 @@
   "image": "/static/market.avif",
   "mainPage": "collections",
   "description": "Follow the most traded gaming NFTs.",
-  "features": ["Market Values"]
+  "features": ["Volume"]
 }
