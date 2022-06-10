@@ -35,7 +35,7 @@ def sources_row():
                                 "col-auto pr-0",
                                 [
                                     Image(
-                                        src="https://market-volume-staging.ekp.earnkeeper.io/static/tofu.png",
+                                        src="https://market-volume.ekp.earnkeeper.io/static/tofu.png",
                                         style={"height": "20px"}
                                     )
                                 ]
@@ -188,7 +188,7 @@ def table_row(TABLE_COLLECTION_NAME):
                         class_name="col-auto pr-0",
                         children=[
                             Image(
-                                src="https://market-volume-staging.ekp.earnkeeper.io/static/tofu.png",
+                                src="https://market-volume.ekp.earnkeeper.io/static/tofu.png",
                                 style={"height": "16px"}
                             )
                         ]

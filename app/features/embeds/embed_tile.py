@@ -96,7 +96,7 @@ source_row = Col(
                 "col-auto pr-0",
                 [
                     Image(
-                        src="https://market-volume-staging.ekp.earnkeeper.io/static/tofu.png",
+                        src="https://market-volume.ekp.earnkeeper.io/static/tofu.png",
                         style={"height": "12px"}
                     )
                 ]
